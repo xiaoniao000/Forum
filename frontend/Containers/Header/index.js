@@ -1,17 +1,18 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import classnames from 'classnames';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import classnames from "classnames";
 
-import appLayout from 'SharedStyles/appLayout';
-import styles from './styles';
+import appLayout from "SharedStyles/appLayout";
+import styles from "./styles";
 
 // components for Header
-import UserMenu from 'Components/Header/UserMenu';
-import Logo from 'Components/Header/Logo';
-import NavigationBar from 'Components/Header/NavigationBar';
-import PlaceholderImage from 'SharedStyles/placeholder.jpg';
+import UserMenu from "Components/Header/UserMenu";
+import Logo from "Components/Header/Logo";
+import NavigationBar from "Components/Header/NavigationBar";
+import PlaceholderImage from "SharedStyles/placeholder.jpg";
 
 class Header extends Component {
+  //这就是一个函数
   renderNavLinks() {
     const { forums } = this.props;
 
@@ -29,12 +30,7 @@ class Header extends Component {
   }
 
   render() {
-    const {
-      authenticated,
-      name,
-      username,
-      avatarUrl,
-    } = this.props.user;
+    const { authenticated, name, username, avatarUrl } = this.props.user;
 
     return (
       <div className={classnames(appLayout.constraintWidth)}>
@@ -47,17 +43,15 @@ class Header extends Component {
             avatar={avatarUrl}
           />
         </div>
-        <NavigationBar
-          navigationLinks={this.renderNavLinks()}
-        />
+        <NavigationBar navigationLinks={this.renderNavLinks()} />
       </div>
     );
   }
 }
 
-export default connect(
-  (state) => { return {
+export default connect((state) => {
+  return {
     user: state.user,
     forums: state.app.forums,
-  }; }
-)(Header);
+  };
+})(Header);

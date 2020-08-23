@@ -18,14 +18,14 @@ const viewsPath = path.resolve(__dirname, "../frontend", "Views");
  */
 module.exports = {
   target: "web",
-  devtool: "cheap-module-source-map",
+  devtool: "source-map",
 
   entry: ["webpack-hot-middleware/client", mainAppPath],
 
   output: {
     filename: "bundle.js",
     path: buildPath,
-    publicPath: "/build/",
+    publicPath: "/public/build/",
   },
 
   module: {

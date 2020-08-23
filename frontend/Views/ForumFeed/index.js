@@ -1,35 +1,37 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router';
-import { connect } from 'react-redux';
-import { Helmet } from 'react-helmet';
-import classnames from 'classnames';
+// 第一个部分：导入
+//    导入第三方库
+import React, { Component } from "react";
+import { Link } from "react-router";
+import { connect } from "react-redux";
+import { Helmet } from "react-helmet";
+import classnames from "classnames";
 
+//    导入action
 import {
   getDiscussions,
   getPinnedDiscussions,
   updateSortingMethod,
-} from './actions';
+} from "./actions";
 
-import Button from 'Components/Button';
-import FeedBox from 'Components/FeedBox';
-import SideBar from 'Components/SideBar';
+//    导入复用组件
+import Button from "Components/Button";
+import FeedBox from "Components/FeedBox";
+import SideBar from "Components/SideBar";
 
-import appLayout from 'SharedStyles/appLayout.css';
-import styles from './styles.css';
+//    导入CSS
+import appLayout from "SharedStyles/appLayout.css";
+import styles from "./styles.css";
 
+// 第二个部分：定义该组件
 class ForumFeed extends Component {
+  //生命周期函数
   componentDidMount() {
-    const {
-      currentForumId,
-      getDiscussions,
-      getPinnedDiscussions,
-    } = this.props;
+    const { currentForumId, getDiscussions, getPinnedDiscussions } = this.props;
 
     // get the discussions and pinned discussions
     getDiscussions(currentForumId());
     getPinnedDiscussions(currentForumId());
   }
-
   componentDidUpdate(prevProps) {
     const {
       currentForum,
@@ -47,6 +49,7 @@ class ForumFeed extends Component {
     }
   }
 
+  //自己定义的函数
   handleSortingChange(newSortingMethod) {
     const {
       currentForum,
@@ -60,14 +63,18 @@ class ForumFeed extends Component {
       getDiscussions(currentForum, false, true);
     }
   }
-
   renderNewDiscussionButtion() {
     const { currentForum } = this.props;
 
     return (
-      <div className={classnames(appLayout.showOnMediumBP, styles.newDiscussionBtn)}>
+      <div
+        className={classnames(
+          appLayout.showOnMediumBP,
+          styles.newDiscussionBtn
+        )}
+      >
         <Link to={`/${currentForum}/new_discussion`}>
-          <Button type='outline' fullWidth noUppercase>
+          <Button type="outline" fullWidth noUppercase>
             New Discussion
           </Button>
         </Link>
@@ -75,6 +82,7 @@ class ForumFeed extends Component {
     );
   }
 
+  //渲染
   render() {
     const {
       currentForum,
@@ -87,27 +95,27 @@ class ForumFeed extends Component {
     } = this.props;
 
     if (error) {
-      return (
-        <div className={classnames(styles.errorMsg)}>
-          {error}
-        </div>
-      );
+      return <div className={classnames(styles.errorMsg)}>{error}</div>;
     }
 
     return (
-      <div className={classnames(appLayout.constraintWidth, styles.contentArea)}>
-        <Helmet><title>{`ReForum | ${currentForum}`}</title></Helmet>
+      <div
+        className={classnames(appLayout.constraintWidth, styles.contentArea)}
+      >
+        <Helmet>
+          <title>{`ReForum | ${currentForum}`}</title>
+        </Helmet>
 
         <div className={appLayout.primaryContent}>
           <FeedBox
-            type='pinned'
+            type="pinned"
             loading={fetchingPinnedDiscussions}
             discussions={pinnedDiscussions}
             currentForum={currentForum}
           />
 
           <FeedBox
-            type='general'
+            type="general"
             loading={fetchingDiscussions}
             discussions={discussions}
             currentForum={currentForum}
@@ -115,7 +123,7 @@ class ForumFeed extends Component {
             activeSortingMethod={sortingMethod}
           />
 
-          { this.renderNewDiscussionButtion() }
+          {this.renderNewDiscussionButtion()}
         </div>
 
         <div className={appLayout.secondaryContent}>
@@ -126,24 +134,49 @@ class ForumFeed extends Component {
   }
 }
 
+//导出该组件
 export default connect(
-  (state) => { return {
-    currentForum: state.app.currentForum,
-    currentForumId: () => {
-      const currentForumObj = _.find(state.app.forums, { forum_slug: state.app.currentForum });
-      if (currentForumObj) return currentForumObj._id;
-      else return null;
-    },
-    fetchingDiscussions: state.feed.fetchingDiscussions,
-    discussions: state.feed.discussions,
-    fetchingPinnedDiscussions: state.feed.fetchingPinnedDiscussions,
-    sortingMethod: state.feed.sortingMethod,
-    pinnedDiscussions: state.feed.pinnedDiscussions,
-    error: state.feed.error,
-  }; },
-  (dispatch) => { return {
-    getDiscussions: (currentForumId, feedChanged, sortingMethod, sortingChanged) => { dispatch(getDiscussions(currentForumId, feedChanged, sortingMethod, sortingChanged)); },
-    getPinnedDiscussions: (currentForumId, feedChanged) => { dispatch(getPinnedDiscussions(currentForumId, feedChanged)); },
-    updateSortingMethod: (method) => { dispatch(updateSortingMethod(method)); },
-  }; }
+  (state) => {
+    return {
+      currentForum: state.app.currentForum,
+      currentForumId: () => {
+        const currentForumObj = _.find(state.app.forums, {
+          forum_slug: state.app.currentForum,
+        });
+        if (currentForumObj) return currentForumObj._id;
+        else return null;
+      },
+      fetchingDiscussions: state.feed.fetchingDiscussions,
+      discussions: state.feed.discussions,
+      fetchingPinnedDiscussions: state.feed.fetchingPinnedDiscussions,
+      sortingMethod: state.feed.sortingMethod,
+      pinnedDiscussions: state.feed.pinnedDiscussions,
+      error: state.feed.error,
+    };
+  },
+  (dispatch) => {
+    return {
+      getDiscussions: (
+        currentForumId,
+        feedChanged,
+        sortingMethod,
+        sortingChanged
+      ) => {
+        dispatch(
+          getDiscussions(
+            currentForumId,
+            feedChanged,
+            sortingMethod,
+            sortingChanged
+          )
+        );
+      },
+      getPinnedDiscussions: (currentForumId, feedChanged) => {
+        dispatch(getPinnedDiscussions(currentForumId, feedChanged));
+      },
+      updateSortingMethod: (method) => {
+        dispatch(updateSortingMethod(method));
+      },
+    };
+  }
 )(ForumFeed);
