@@ -34,7 +34,7 @@ class Discussion extends Component {
     let dateDisplay = moment(discDate);
     dateDisplay = dateDisplay.from(moment());
 
-    //喜欢的人数
+    //点赞的样式和人数
     let favCount = "";
     if (toggleingFavorite) favCount = "Toggling Favorite...";
     else if (userFavorited) favCount = `Favorited (${favoriteCount})`;
@@ -86,10 +86,10 @@ class Discussion extends Component {
             noUppercase
             className={styles.favoriteButton}
             onClick={() => {
-              // 这里挺妙的。如果点赞，就触发点赞方法。如果取消点赞，就不触发
               !toggleingFavorite && favoriteAction(id);
             }}
           >
+            {/* 区别是实心还是空心 */}
             <i
               className={classnames(
                 `fa fa-${userFavorited ? "heart" : "heart-o"}`

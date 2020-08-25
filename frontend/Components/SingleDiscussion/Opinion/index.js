@@ -9,8 +9,6 @@ import Button from "Components/Button";
 import RichEditor from "Components/RichEditor";
 
 class Opinion extends Component {
-  onLike = () => {};
-
   render() {
     const {
       opinionId,
@@ -24,12 +22,24 @@ class Opinion extends Component {
       currentUserRole,
       deleteAction,
       deletingOpinion,
+
+      favoriteCount,
+      favoriteAction,
+      userFavorited,
+      toggleingFavorite,
     } = this.props;
 
     let dateDisplay = moment(opDate);
     dateDisplay = dateDisplay.from(moment());
 
     const allowDelete = userId === currentUserId || currentUserRole === "admin";
+
+    let favCount = "";
+    if (toggleingFavorite) favCount = "Toggling Favorite...";
+    else if (userFavorited) favCount = `Favorited (${favoriteCount})`;
+    else if (favoriteCount === 0) favCount = "Make favorite";
+    else if (favoriteCount === 1) favCount = "1 favorite";
+    else favCount = `${favoriteCount} favorites`;
 
     return (
       <div className={styles.container}>
@@ -65,19 +75,29 @@ class Opinion extends Component {
         </div>
 
         <div className={styles.opContent}>
-          <RichEditor readOnly value={opContent} isComment={true} />
+          <RichEditor readOnly value={opContent} isOpinion={true} />
         </div>
 
-        {/* 点赞  二级回复 */}
+        {/* 点赞 */}
         {
           <Button
-            style={{ padding: 0, alignSelf: "center" }}
+            className={styles.favoriteButton}
             noUppercase
-            onClick={this.onLike}
+            onClick={() => {
+              !toggleingFavorite && favoriteAction(opinionId);
+            }}
           >
-            like
+            <i
+              className={classnames(
+                `fa fa-${userFavorited ? "heart" : "heart-o"}`
+              )}
+            ></i>
+            <span>{favCount}</span>
           </Button>
         }
+
+        {/* 二级回复 */}
+        {}
 
         {deletingOpinion === opinionId && (
           <div className={styles.deletingOpinion}>Deleting Opinion ...</div>
@@ -100,6 +120,10 @@ Opinion.defaultProps = {
   currentUserRole: "user",
   deleteAction: () => {},
   deletingOpinion: null,
+  favoriteCount: 0,
+  favoriteAction: () => {},
+  userFavorited: false,
+  toggleingFavorite: false,
 };
 
 Opinion.propTypes = {
@@ -114,6 +138,10 @@ Opinion.propTypes = {
   currentUserRole: React.PropTypes.string,
   deleteAction: React.PropTypes.func,
   deletingOpinion: React.PropTypes.any,
+  favoriteCount: React.PropTypes.number,
+  favoriteAction: React.PropTypes.func,
+  userFavorited: React.PropTypes.bool,
+  toggleingFavorite: React.PropTypes.bool,
 };
 
 export default Opinion;

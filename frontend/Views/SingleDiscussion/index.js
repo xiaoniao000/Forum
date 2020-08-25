@@ -13,6 +13,7 @@ import {
   deletePost,
   deletedDiscussionRedirect,
   deleteOpinion,
+  toggleOpinionFavorite,
 } from "./actions";
 
 import Discussion from "Components/SingleDiscussion/Discussion";
@@ -32,6 +33,7 @@ class SingleDiscussion extends Component {
     //查看这是哪一个论坛（forum）的哪一个帖子（discussion）
     const { forum, discussion } = this.props.params;
 
+    //获取该论坛的数据
     this.props.getDiscussion(discussion);
   }
 
@@ -58,6 +60,15 @@ class SingleDiscussion extends Component {
     let favorited = false;
     for (let i = 0; i < favorites.length; i++) {
       if (favorites[i] === userId) favorited = true;
+    }
+    return favorited;
+  }
+
+  //用户是否给回复点赞过
+  userFavoritedOpinion(userId, opinionFavorites) {
+    let favorited = false;
+    for (let i = 0; i < opinionFavorites.length; i++) {
+      if (opinionFavorites[i] === userId) favorited = true;
     }
     return favorited;
   }
@@ -111,6 +122,8 @@ class SingleDiscussion extends Component {
       deletingOpinion,
       deletingDiscussion,
       error,
+      toggleingOpinionFavorite,
+      toggleOpinionFavorite, //这里的toggleOpinionFavorite来自于dispatch
     } = this.props;
 
     if (error) {
@@ -127,6 +140,9 @@ class SingleDiscussion extends Component {
     const { _id, content, date, favorites, title, tags, opinions } = discussion;
 
     const { avatarUrl, name, username } = discussion.user;
+
+    //有很多个opinion,不是判断一个opinion的opinionFavorites,而是全部的
+    //所以不应该在discussion里判断,而是在opinion组件里
 
     // check if logged in user is owner of the discussion
     let allowDelete = false;
@@ -185,6 +201,14 @@ class SingleDiscussion extends Component {
 
         {opinions &&
           opinions.map((opinion) => {
+            const { opinionFavorites } = opinion;
+
+            //check if user favorated the opinion
+            const opinionUserFavorited = this.userFavoritedOpinion(
+              this.props.userId,
+              opinionFavorites
+            );
+
             return (
               <Opinion
                 key={opinion._id}
@@ -199,8 +223,10 @@ class SingleDiscussion extends Component {
                 currentUserRole={this.props.userRole}
                 deleteAction={this.deleteOpinion.bind(this)}
                 deletingOpinion={deletingOpinion}
-                // likeCount={}
-                // onLike={}
+                favoriteCount={opinionFavorites.length}
+                favoriteAction={toggleOpinionFavorite}
+                userFavorited={opinionUserFavorited}
+                toggleingOpinionFavorite={toggleingOpinionFavorite}
               />
             );
           })}
@@ -226,6 +252,7 @@ export default connect(
       deletingOpinion: state.discussion.deletingOpinion,
       discussion: state.discussion.discussion,
       error: state.discussion.error,
+      toggleingOpinionFavorite: state.discussion.toggleingOpinionFavorite,
     };
   },
   (dispatch) => {
@@ -235,6 +262,10 @@ export default connect(
       },
       toggleFavorite: (discussionId) => {
         dispatch(toggleFavorite(discussionId));
+      },
+      toggleOpinionFavorite: (opinionId) => {
+        //下面的toggleOpinionFavorite来自于 action
+        dispatch(toggleOpinionFavorite(opinionId));
       },
       updateOpinionContent: (content) => {
         dispatch(updateOpinionContent(content));

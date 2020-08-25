@@ -1,5 +1,5 @@
 // models
-const Opinion = require('./model');
+const Opinion = require("./model");
 
 /**
  * get all opinion regarding a single discussion
@@ -8,15 +8,16 @@ const Opinion = require('./model');
  */
 const getAllOpinions = (discussion_id) => {
   return new Promise((resolve, reject) => {
-    Opinion
-    .find({ discussion_id })
-    .populate('user')
-    .sort({ date: -1 })
-    .exec((error, opinions) => {
-      if (error) { console.log(error); reject(error); }
-      else if (!opinions) reject(null);
-      else resolve(opinions);
-    });
+    Opinion.find({ discussion_id })
+      .populate("user")
+      .sort({ date: -1 })
+      .exec((error, opinions) => {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else if (!opinions) reject(null);
+        else resolve(opinions);
+      });
   });
 };
 
@@ -41,8 +42,64 @@ const createOpinion = ({ forum_id, discussion_id, user_id, content }) => {
     });
 
     newOpinion.save((error) => {
-      if (error) { console.log(error); reject(error); }
-      else { resolve(newOpinion); }
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else {
+        resolve(newOpinion);
+      }
+    });
+  });
+};
+
+/**
+ * toggle favorite status of opinion
+ * @param  {ObjectId} opinion_id
+ * @param  {ObjectId} user_id
+ * @return {Promise}
+ */
+const toggleOpinionFavorite = (opinion_id, user_id) => {
+  return new Promise((resolve, reject) => {
+    Opinion.findById(opinion_id, (error, opinion) => {
+      // console.log("toggleOpinionFavorite---------------", opinion);
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else if (!opinion) reject(null);
+      else {
+        // add or remove favorite
+        let matched = null;
+        for (let i = 0; i < opinion.opinionFavorites.length; i++) {
+          //opinion.opinionFavorites保存 点赞者的user_id
+          if (String(opinion.opinionFavorites[i]) === String(user_id)) {
+            matched = i;
+          }
+        }
+
+        //如果没有点过赞，把该user_id添加进去；否则，从discussion.favorites数组中删掉该user_id
+        if (matched === null) {
+          opinion.opinionFavorites.push(user_id);
+        } else {
+          opinion.opinionFavorites = [
+            ...opinion.opinionFavorites.slice(0, matched),
+            ...opinion.opinionFavorites.slice(
+              matched + 1,
+              opinion.opinionFavorites.length
+            ),
+          ];
+        }
+
+        //opinion.save 是干什么的
+        //updatedOpinion 就是更新后(去掉某个userId)的opinion
+        opinion.save((error, updatedOpinion) => {
+          if (error) {
+            console.log(error);
+            reject(error);
+          }
+          // console.log(`------------updatedOpinion${updatedOpinion}`);
+          resolve(updatedOpinion);
+        });
+      }
     });
   });
 };
@@ -58,11 +115,11 @@ const updateOpinion = (opinion_id) => {
  */
 const deleteOpinion = (opinion_id) => {
   return new Promise((resolve, reject) => {
-    Opinion
-    .remove({ _id: opinion_id })
-    .exec((error) => {
-      if (error) { console.log(error); reject(error); }
-      else resolve('deleted');
+    Opinion.remove({ _id: opinion_id }).exec((error) => {
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else resolve("deleted");
     });
   });
 };
@@ -72,4 +129,5 @@ module.exports = {
   createOpinion,
   updateOpinion,
   deleteOpinion,
+  toggleOpinionFavorite,
 };

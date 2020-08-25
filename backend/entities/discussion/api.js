@@ -23,12 +23,9 @@ const discussionAPI = (app) => {
 
   // toggle favorite to the discussion
   app.put("/api/discussion/toggleFavorite/:discussion_id", (req, res) => {
-    // console.log("----------------------------");
-    // console.log(res);
-    // console.log("----------------------------");
     const { discussion_id } = req.params;
     if (req.user) {
-      // TODO: describe the toggle process with comments
+      // TODO: describe the toggle process with opinions
       toggleFavorite(discussion_id, req.user._id).then(
         (result) => {
           getDiscussion(result.discussion_slug).then(

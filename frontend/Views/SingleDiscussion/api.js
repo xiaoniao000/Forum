@@ -11,6 +11,11 @@ export const toggleFavoriteApi = (discussion_id) => {
   return axios.put(`/api/discussion/toggleFavorite/${discussion_id}`);
 };
 
+export const toggleOpinionFavoriteApi = (opinion_id) => {
+  // console.log("前端发送api----------");
+  return axios.put(`/api/opinion/toggleOpinionFavorite/${opinion_id}`);
+};
+
 export const postOpinionApi = (opinion) => {
   return axios.post("/api/opinion/newOpinion", opinion);
 };

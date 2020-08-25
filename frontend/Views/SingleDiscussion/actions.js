@@ -6,6 +6,9 @@ import {
   TOGGLE_FAVORITE_START,
   TOGGLE_FAVORITE_SUCCESS,
   TOGGLE_FAVORITE_FAILURE,
+  TOGGLE_OPINION_FAVORITE_START,
+  TOGGLE_OPINION_FAVORITE_SUCCESS,
+  TOGGLE_OPINION_FAVORITE_FAILURE,
   UPDATE_OPINION_CONTENT,
   POSTING_OPINION_START,
   POSTING_OPINION_SUCCESS,
@@ -23,6 +26,7 @@ import {
   fetchSingleDiscussion,
   fetchOpinions,
   toggleFavoriteApi,
+  toggleOpinionFavoriteApi,
   postOpinionApi,
   deletePostApi,
   deleteOpinionApi,
@@ -56,7 +60,6 @@ export const toggleFavorite = (discussionId) => {
   return (dispatch, getState) => {
     dispatch({ type: TOGGLE_FAVORITE_START });
 
-    //toggleFavoriteApi这个api调用失败了
     toggleFavoriteApi(discussionId).then(
       (data) => {
         if (data.data._id) {
@@ -65,6 +68,29 @@ export const toggleFavorite = (discussionId) => {
         } else dispatch({ type: TOGGLE_FAVORITE_FAILURE });
       },
       (error) => dispatch({ type: TOGGLE_FAVORITE_FAILURE })
+    );
+  };
+};
+
+/**
+ * toggle favorite status of the opinion
+ * @param  {ObjectId} opinionId
+ * @return {action}
+ */
+export const toggleOpinionFavorite = (opinionId) => {
+  return (dispatch, getState) => {
+    dispatch({ type: TOGGLE_OPINION_FAVORITE_START });
+
+    toggleOpinionFavoriteApi(opinionId).then(
+      (data) => {
+        // console.log("data---------", data);
+        if (data.data._id) {
+          // console.log("data.data._id---------", data.data._id);
+          dispatch({ type: TOGGLE_OPINION_FAVORITE_SUCCESS }); //这个用来更改toggle的状态
+          dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data }); //这个用来修改别的数据
+        } else dispatch({ type: TOGGLE_OPINION_FAVORITE_FAILURE });
+      },
+      (error) => dispatch({ type: TOGGLE_OPINION_FAVORITE_FAILURE })
     );
   };
 };

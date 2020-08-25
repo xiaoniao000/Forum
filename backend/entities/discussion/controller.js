@@ -18,7 +18,10 @@ const getDiscussion = (discussion_slug, discussion_id) => {
     if (discussion_slug) findObject.discussion_slug = discussion_slug;
     if (discussion_id) findObject._id = discussion_id;
 
+    // console.log("getDiscussion--------findObject", findObject);
+
     //Discussion是一个从model.js里导出的Schema
+    //下面这么多函数是什么意思!!!
     Discussion.findOne(findObject)
       .populate("forum")
       .populate("user")
@@ -89,8 +92,6 @@ const createDiscussion = (discussion) => {
 const toggleFavorite = (discussion_id, user_id) => {
   return new Promise((resolve, reject) => {
     Discussion.findById(discussion_id, (error, discussion) => {
-      console.log("----------------------------");
-      console.log(discussion);
       if (error) {
         console.log(error);
         reject(error);
@@ -107,9 +108,11 @@ const toggleFavorite = (discussion_id, user_id) => {
 
         //如果没有点过赞，把该user_id添加进去；否则，从discussion.favorites数组中删掉该user_id
         if (matched === null) {
+          //之前不能点赞,是因为mongoose版本太低不支持 push 方法!!!
           discussion.favorites.push(user_id);
         } else {
           discussion.favorites = [
+            //这里使用了 slice 方法去除数组中的某个元素
             ...discussion.favorites.slice(0, matched),
             ...discussion.favorites.slice(
               matched + 1,
@@ -118,10 +121,8 @@ const toggleFavorite = (discussion_id, user_id) => {
           ];
         }
 
-        //这里报错了！！！
         discussion.save((error, updatedDiscussion) => {
           if (error) {
-            console.log("--------------save_error");
             console.log(error);
             reject(error);
           }
