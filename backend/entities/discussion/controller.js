@@ -1,9 +1,10 @@
-const generateDiscussionSlug = require('../../utilities/tools').generateDiscussionSlug;
-const getAllOpinions = require('../opinion/controller').getAllOpinions;
-const getUser = require('../user/controller').getUser;
+const generateDiscussionSlug = require("../../utilities/tools")
+  .generateDiscussionSlug;
+const getAllOpinions = require("../opinion/controller").getAllOpinions;
+const getUser = require("../user/controller").getUser;
 
-const Discussion = require('./model');
-const Opinion = require('../opinion/model');
+const Discussion = require("./model");
+const Opinion = require("../opinion/model");
 
 /**
  * get a single discussion
@@ -17,25 +18,32 @@ const getDiscussion = (discussion_slug, discussion_id) => {
     if (discussion_slug) findObject.discussion_slug = discussion_slug;
     if (discussion_id) findObject._id = discussion_id;
 
-    Discussion
-    .findOne(findObject)
-    .populate('forum')
-    .populate('user')
-    .lean()
-    .exec((error, result) => {
-      if (error) { console.log(error); reject(error); }
-      else if (!result) reject(null);
-      else {
-        // add opinions to the discussion object
-        getAllOpinions(result._id).then(
-          (opinions) => {
-            result.opinions = opinions;
-            resolve(result);
-          },
-          (error) => { { console.log(error); reject(error); } }
-        );
-      }
-    });
+    //Discussion是一个从model.js里导出的Schema
+    Discussion.findOne(findObject)
+      .populate("forum")
+      .populate("user")
+      .lean()
+      .exec((error, result) => {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else if (!result) reject(null);
+        else {
+          // add opinions to the discussion object
+          getAllOpinions(result._id).then(
+            (opinions) => {
+              result.opinions = opinions;
+              resolve(result);
+            },
+            (error) => {
+              {
+                console.log(error);
+                reject(error);
+              }
+            }
+          );
+        }
+      });
   });
 };
 
@@ -51,6 +59,7 @@ const createDiscussion = (discussion) => {
       forum: discussion.forumId,
       user_id: discussion.userId,
       user: discussion.userId,
+      //discussion_id 应该就是 _id ，应该是自动生成的
       discussion_slug: generateDiscussionSlug(discussion.title),
       date: new Date(),
       title: discussion.title,
@@ -80,34 +89,47 @@ const createDiscussion = (discussion) => {
 const toggleFavorite = (discussion_id, user_id) => {
   return new Promise((resolve, reject) => {
     Discussion.findById(discussion_id, (error, discussion) => {
-      if (error) { console.log(error); reject(error); }
-      else if (!discussion) reject(null);
+      console.log("----------------------------");
+      console.log(discussion);
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else if (!discussion) reject(null);
       else {
         // add or remove favorite
         let matched = null;
         for (let i = 0; i < discussion.favorites.length; i++) {
+          //discussion.favorites保存 点赞者的user_id
           if (String(discussion.favorites[i]) === String(user_id)) {
             matched = i;
           }
         }
 
+        //如果没有点过赞，把该user_id添加进去；否则，从discussion.favorites数组中删掉该user_id
         if (matched === null) {
           discussion.favorites.push(user_id);
         } else {
           discussion.favorites = [
             ...discussion.favorites.slice(0, matched),
-            ...discussion.favorites.slice(matched + 1, discussion.favorites.length),
+            ...discussion.favorites.slice(
+              matched + 1,
+              discussion.favorites.length
+            ),
           ];
         }
 
+        //这里报错了！！！
         discussion.save((error, updatedDiscussion) => {
-          if (error) { console.log(error); reject(error); }
+          if (error) {
+            console.log("--------------save_error");
+            console.log(error);
+            reject(error);
+          }
           resolve(updatedDiscussion);
         });
       }
     });
   });
-
 };
 
 const updateDiscussion = (forum_id, discussion_slug) => {
@@ -117,27 +139,29 @@ const updateDiscussion = (forum_id, discussion_slug) => {
 const deleteDiscussion = (discussion_slug) => {
   return new Promise((resolve, reject) => {
     // find the discussion id first
-    Discussion
-    .findOne({ discussion_slug })
-    .exec((error, discussion) => {
-      if (error) { console.log(error); reject(error); }
+    Discussion.findOne({ discussion_slug }).exec((error, discussion) => {
+      if (error) {
+        console.log(error);
+        reject(error);
+      }
 
       // get the discussion id
       const discussion_id = discussion._id;
 
       // remove any opinion regarding the discussion
-      Opinion
-      .remove({ discussion_id })
-      .exec((error) => {
-        if (error) { console.log(error); reject(error); }
+      Opinion.remove({ discussion_id }).exec((error) => {
+        if (error) {
+          console.log(error);
+          reject(error);
+        }
 
         // finally remove the discussion
         else {
-          Discussion
-          .remove({ discussion_slug })
-          .exec((error) => {
-            if (error) { console.log(error); reject(error); }
-            else {
+          Discussion.remove({ discussion_slug }).exec((error) => {
+            if (error) {
+              console.log(error);
+              reject(error);
+            } else {
               resolve({ deleted: true });
             }
           });

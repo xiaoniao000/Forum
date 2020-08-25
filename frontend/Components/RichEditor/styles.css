@@ -40,8 +40,9 @@
   margin-top: 20px;
 }
 
-.newDiscussion { min-height: 300px; }
-
+.newDiscussion {
+  min-height: 300px;
+}
 
 /**
  * Controls
@@ -51,7 +52,9 @@
   display: flex;
   flex-direction: row;
   border-bottom: 1px solid borderColor;
-  @media smallBP { flex-direction: column-reverse; }
+  @media smallBP {
+    flex-direction: column-reverse;
+  }
 }
 
 .controls {
@@ -71,9 +74,13 @@
 
   transition: color 0.3s;
 
-  &:hover { color: primaryFontColor; }
+  &:hover {
+    color: primaryFontColor;
+  }
 
-  @media smallBP { padding: 5px 10px; }
+  @media smallBP {
+    padding: 5px 10px;
+  }
 }
 
 .controlButtonActive {
@@ -94,7 +101,7 @@
 }
 
 .editorBlockquoteStyle::before {
-  content: '';
+  content: "";
   position: absolute;
   height: 100%;
   width: 5px;
@@ -119,8 +126,16 @@
 
 .editorH1Style,
 .editorH2Style,
-.editorH3Style { color: #4c4c4c; }
+.editorH3Style {
+  color: #4c4c4c;
+}
 
-.editorH1Style { font-size: 1.6em; }
-.editorH2Style { font-size: 1.3em; }
-.editorH3Style { font-size: 1.1em; }
+.editorH1Style {
+  font-size: 1.6em;
+}
+.editorH2Style {
+  font-size: 1.3em;
+}
+.editorH3Style {
+  font-size: 1.1em;
+}

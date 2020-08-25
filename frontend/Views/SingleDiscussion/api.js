@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 /**
  * single discussion apis
@@ -12,7 +12,7 @@ export const toggleFavoriteApi = (discussion_id) => {
 };
 
 export const postOpinionApi = (opinion) => {
-  return axios.post('/api/opinion/newOpinion', opinion);
+  return axios.post("/api/opinion/newOpinion", opinion);
 };
 
 export const deletePostApi = (discussionSlug) => {

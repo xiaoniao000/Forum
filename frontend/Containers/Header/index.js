@@ -12,7 +12,7 @@ import NavigationBar from "Components/Header/NavigationBar";
 import PlaceholderImage from "SharedStyles/placeholder.jpg";
 
 class Header extends Component {
-  //这就是一个函数
+  //渲染导航栏
   renderNavLinks() {
     const { forums } = this.props;
 
@@ -36,6 +36,7 @@ class Header extends Component {
       <div className={classnames(appLayout.constraintWidth)}>
         <div className={styles.headerTop}>
           <Logo />
+          {/* 用户栏 */}
           <UserMenu
             signedIn={authenticated}
             userName={name || username}
@@ -43,6 +44,7 @@ class Header extends Component {
             avatar={avatarUrl}
           />
         </div>
+        {/* 导航栏 */}
         <NavigationBar navigationLinks={this.renderNavLinks()} />
       </div>
     );

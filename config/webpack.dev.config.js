@@ -20,12 +20,12 @@ module.exports = {
   target: "web",
   devtool: "source-map",
 
-  entry: ["webpack-hot-middleware/client", mainAppPath],
+  entry: ["webpack-hot-middleware/client", mainAppPath], //热重载
 
   output: {
     filename: "bundle.js",
     path: buildPath,
-    publicPath: "/public/build/",
+    publicPath: "/build/", //改了这里就能看就修改了，哇什么鬼！！！
   },
 
   module: {

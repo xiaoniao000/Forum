@@ -3,26 +3,21 @@ import {
   FETCHING_SINGLE_DISC_END,
   FETCHING_SINGLE_DISC_SUCCESS,
   FETCHING_SINGLE_DISC_FAILURE,
-
   TOGGLE_FAVORITE_START,
   TOGGLE_FAVORITE_SUCCESS,
   TOGGLE_FAVORITE_FAILURE,
-
   UPDATE_OPINION_CONTENT,
-
   POSTING_OPINION_START,
   POSTING_OPINION_SUCCESS,
   POSTING_OPINION_FAILURE,
-
   DELETE_DISC_START,
   DELETE_DISC_SUCCESS,
   DELETE_DISC_REDIRECT,
   DELETE_DISC_FAILURE,
-
   DELETE_OPINION_START,
   DELETE_OPINION_SUCCESS,
   DELETE_OPINION_FAILURE,
-} from './constants';
+} from "./constants";
 
 import {
   fetchSingleDiscussion,
@@ -31,7 +26,7 @@ import {
   postOpinionApi,
   deletePostApi,
   deleteOpinionApi,
-} from './api';
+} from "./api";
 
 /**
  * get the discussion from server
@@ -42,11 +37,12 @@ export const getDiscussion = (discussionSlug) => {
   return (dispatch, getState) => {
     dispatch({ type: FETCHING_SINGLE_DISC_START });
     fetchSingleDiscussion(discussionSlug).then(
-      data => {
-        if (data.data) dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data });
+      (data) => {
+        if (data.data)
+          dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data });
         else dispatch({ type: FETCHING_SINGLE_DISC_FAILURE });
       },
-      error => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
+      (error) => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
     );
   };
 };
@@ -60,15 +56,15 @@ export const toggleFavorite = (discussionId) => {
   return (dispatch, getState) => {
     dispatch({ type: TOGGLE_FAVORITE_START });
 
+    //toggleFavoriteApi这个api调用失败了
     toggleFavoriteApi(discussionId).then(
-      data => {
+      (data) => {
         if (data.data._id) {
           dispatch({ type: TOGGLE_FAVORITE_SUCCESS });
           dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data });
-        }
-        else dispatch({ type: TOGGLE_FAVORITE_FAILURE });
+        } else dispatch({ type: TOGGLE_FAVORITE_FAILURE });
       },
-      error => dispatch({ type: TOGGLE_FAVORITE_FAILURE })
+      (error) => dispatch({ type: TOGGLE_FAVORITE_FAILURE })
     );
   };
 };
@@ -98,24 +94,30 @@ export const postOpinion = (opinion, discussionSlug) => {
 
     // validate the opinion
     if (!opinion.content || opinion.content.length < 20) {
-      dispatch({ type: POSTING_OPINION_FAILURE, payload: 'Please provide a bit more info in your opinion....at least 20 characters.' });
+      dispatch({
+        type: POSTING_OPINION_FAILURE,
+        payload:
+          "Please provide a bit more info in your opinion....at least 20 characters.",
+      });
     } else {
       // call the api to post the opinion
       postOpinionApi(opinion).then(
-        data => {
+        (data) => {
           if (data.data._id) {
             // fetch the discussion to refresh the opinion list
             fetchSingleDiscussion(discussionSlug).then(
-              data => {
-                dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data });
+              (data) => {
+                dispatch({
+                  type: FETCHING_SINGLE_DISC_SUCCESS,
+                  payload: data.data,
+                });
                 dispatch({ type: POSTING_OPINION_SUCCESS });
               },
-              error => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
+              (error) => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
             );
-          }
-          else dispatch({ type: POSTING_OPINION_FAILURE });
+          } else dispatch({ type: POSTING_OPINION_FAILURE });
         },
-        error => dispatch({ type: POSTING_OPINION_FAILURE })
+        (error) => dispatch({ type: POSTING_OPINION_FAILURE })
       );
     }
   };
@@ -130,11 +132,14 @@ export const deletePost = (discussionSlug) => {
   return (dispatch, getState) => {
     dispatch({ type: DELETE_DISC_START });
     deletePostApi(discussionSlug).then(
-      data => {
-        if (data.data.deleted) { dispatch({ type: DELETE_DISC_SUCCESS }); }
-        else { dispatch({ type: DELETE_DISC_FAILURE }); }
+      (data) => {
+        if (data.data.deleted) {
+          dispatch({ type: DELETE_DISC_SUCCESS });
+        } else {
+          dispatch({ type: DELETE_DISC_FAILURE });
+        }
       },
-      error => dispatch({ type: DELETE_DISC_FAILURE })
+      (error) => dispatch({ type: DELETE_DISC_FAILURE })
     );
   };
 };
@@ -163,22 +168,24 @@ export const deleteOpinion = (opinionId, discussionSlug) => {
 
     // call the api
     deleteOpinionApi(opinionId).then(
-      data => {
+      (data) => {
         if (data.data.deleted) {
-
           // fetch the discussion again to refresh the opinions
           fetchSingleDiscussion(discussionSlug).then(
-            data => {
+            (data) => {
               dispatch({ type: DELETE_OPINION_SUCCESS });
-              dispatch({ type: FETCHING_SINGLE_DISC_SUCCESS, payload: data.data });
+              dispatch({
+                type: FETCHING_SINGLE_DISC_SUCCESS,
+                payload: data.data,
+              });
             },
-            error => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
+            (error) => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
           );
-
+        } else {
+          dispatch({ type: DELETE_OPINION_FAILURE });
         }
-        else { dispatch({ type: DELETE_OPINION_FAILURE }); }
       },
-      error => dispatch({ type: DELETE_OPINION_FAILURE })
+      (error) => dispatch({ type: DELETE_OPINION_FAILURE })
     );
   };
 };

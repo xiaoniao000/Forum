@@ -1,15 +1,16 @@
-import _ from 'lodash';
-import React, { Component } from 'react';
-import { Link } from 'react-router';
-import moment from 'moment';
-import classnames from 'classnames';
-import styles from './styles.css';
+import _ from "lodash";
+import React, { Component } from "react";
+import { Link } from "react-router";
+import moment from "moment";
+import classnames from "classnames";
+import styles from "./styles.css";
 
-import PlaceholderImage from 'SharedStyles/placeholder.jpg';
-import Button from 'Components/Button';
-import Tag from 'Components/Tag';
-import RichEditor from 'Components/RichEditor';
+import PlaceholderImage from "SharedStyles/placeholder.jpg";
+import Button from "Components/Button";
+import Tag from "Components/Tag";
+import RichEditor from "Components/RichEditor";
 
+//楼主发的贴的信息
 class Discussion extends Component {
   render() {
     const {
@@ -33,23 +34,32 @@ class Discussion extends Component {
     let dateDisplay = moment(discDate);
     dateDisplay = dateDisplay.from(moment());
 
-    let favCount = '';
-    if (toggleingFavorite) favCount = 'Toggling Favorite...';
+    //喜欢的人数
+    let favCount = "";
+    if (toggleingFavorite) favCount = "Toggling Favorite...";
     else if (userFavorited) favCount = `Favorited (${favoriteCount})`;
-    else if (favoriteCount === 0) favCount = 'Make favorite';
-    else if (favoriteCount === 1) favCount = '1 favorite';
+    else if (favoriteCount === 0) favCount = "Make favorite";
+    else if (favoriteCount === 1) favCount = "1 favorite";
     else favCount = `${favoriteCount} favorites`;
 
     return (
       <div className={styles.container}>
-
+        {/* 楼主信息 如头像等 */}
         <div className={styles.infoContainer}>
           <img className={styles.avatar} src={userAvatar} />
           <div className={styles.columnOnSmallBP}>
             <div className={styles.userInfo}>
-              <Link to={`/user/${userGitHandler}`} className={styles.name}>{userName || userGitHandler}</Link>
-              <a href={`https://www.github.com/${userGitHandler}`} target="_blank" className={styles.gitHandler}>
-                <i className={classnames('fa fa-github-alt', styles.gitIcon)}></i>
+              <Link to={`/user/${userGitHandler}`} className={styles.name}>
+                {userName || userGitHandler}
+              </Link>
+              <a
+                href={`https://www.github.com/${userGitHandler}`}
+                target="_blank"
+                className={styles.gitHandler}
+              >
+                <i
+                  className={classnames("fa fa-github-alt", styles.gitIcon)}
+                ></i>
                 <span>{userGitHandler}</span>
               </a>
             </div>
@@ -57,32 +67,56 @@ class Discussion extends Component {
           </div>
         </div>
 
+        {/* 帖子的内容  标题和描述 */}
         <div className={styles.discTitle}>{discTitle}</div>
         <div className={styles.discContent}>
-          <RichEditor
-            readOnly={true}
-            value={discContent}
-          />
+          <RichEditor readOnly={true} value={discContent} />
         </div>
 
+        {/* 标签、点赞、删除 */}
         <div className={styles.discFooter}>
           <div className={styles.tags}>
-            { tags.map(tag => <Tag name={tag} key={_.uniqueId('tag_')} />)}
+            {tags.map((tag) => (
+              <Tag name={tag} key={_.uniqueId("tag_")} />
+            ))}
           </div>
-          <Button noUppercase className={styles.favoriteButton} onClick={() => { !toggleingFavorite && favoriteAction(id); }}>
-            <i className={classnames(`fa fa-${userFavorited ? 'heart' : 'heart-o'}`)}></i>
+
+          {/* 点赞 */}
+          <Button
+            noUppercase
+            className={styles.favoriteButton}
+            onClick={() => {
+              // 这里挺妙的。如果点赞，就触发点赞方法。如果取消点赞，就不触发
+              !toggleingFavorite && favoriteAction(id);
+            }}
+          >
+            <i
+              className={classnames(
+                `fa fa-${userFavorited ? "heart" : "heart-o"}`
+              )}
+            ></i>
             <span>{favCount}</span>
           </Button>
 
-          { allowDelete && <Button noUppercase className={styles.deleteButton} onClick={() => { deleteAction(); }}>
-            <i className={classnames('fa fa-trash', styles.trashIcon)}></i>
-            <span>Delete</span>
-          </Button> }
+          {allowDelete && (
+            <Button
+              noUppercase
+              className={styles.deleteButton}
+              onClick={() => {
+                deleteAction();
+              }}
+            >
+              <i className={classnames("fa fa-trash", styles.trashIcon)}></i>
+              <span>Delete</span>
+            </Button>
+          )}
         </div>
 
-        { deletingDiscussion && <div className={styles.deletingDiscussion}>
-          Deleting Discussion...
-        </div> }
+        {deletingDiscussion && (
+          <div className={styles.deletingDiscussion}>
+            Deleting Discussion...
+          </div>
+        )}
       </div>
     );
   }
@@ -91,19 +125,20 @@ class Discussion extends Component {
 Discussion.defaultProps = {
   id: 0,
   userAvatar: PlaceholderImage,
-  userName: 'User name',
-  userGitHandler: 'github',
-  discTitle: 'Default Discussion Title',
-  discDate: 'a day ago',
-  discContent: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-  tags: [ 'react', 'redux', 'webkit' ],
+  userName: "User name",
+  userGitHandler: "github",
+  discTitle: "Default Discussion Title",
+  discDate: "a day ago",
+  discContent:
+    "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  tags: ["react", "redux", "webkit"],
   favoriteCount: 1,
-  favoriteAction: () => { },
+  favoriteAction: () => {},
   userFavorited: false,
   toggleingFavorite: false,
   allowDelete: false,
   deletingDiscussion: false,
-  deleteAction: () => { },
+  deleteAction: () => {},
 };
 
 Discussion.propTypes = {
