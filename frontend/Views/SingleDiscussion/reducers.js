@@ -13,6 +13,7 @@ import {
   POSTING_OPINION_START,
   POSTING_OPINION_SUCCESS,
   POSTING_OPINION_FAILURE,
+  UPDATE_SUB_OPINION_CONTENT,
   DELETE_DISC_START,
   DELETE_DISC_SUCCESS,
   DELETE_DISC_FAILURE,
@@ -27,13 +28,13 @@ const initialState = {
   toggleingFavorite: false,
   postingOpinion: false,
   opinionContent: null,
+  subOpinionContent: null,
   opinionError: null,
   deletingDiscussion: false,
   deletedDiscussion: false,
   deletingOpinion: null,
   discussion: null,
   error: null,
-  toggleingOpinionFavorite: false,
 };
 
 export const singleDiscussionReducer = (state = initialState, action) => {
@@ -106,6 +107,12 @@ export const singleDiscussionReducer = (state = initialState, action) => {
         postingOpinion: false,
         opinionContent: null,
         opinionError: action.payload,
+      });
+
+    //!!!
+    case UPDATE_SUB_OPINION_CONTENT:
+      return Object.assign({}, state, {
+        subOpinionContent: action.payload,
       });
 
     case DELETE_DISC_START:

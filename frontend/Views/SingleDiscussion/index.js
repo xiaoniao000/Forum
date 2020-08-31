@@ -9,6 +9,7 @@ import {
   getDiscussion,
   toggleFavorite,
   updateOpinionContent,
+  updateSubOpinionContent,
   postOpinion,
   deletePost,
   deletedDiscussionRedirect,
@@ -30,7 +31,6 @@ class SingleDiscussion extends Component {
   }
 
   componentDidMount() {
-    //查看这是哪一个论坛（forum）的哪一个帖子（discussion）
     const { forum, discussion } = this.props.params;
 
     //获取该论坛的数据
@@ -64,7 +64,7 @@ class SingleDiscussion extends Component {
     return favorited;
   }
 
-  //用户是否给回复点赞过
+  //用户是否给一级评论点赞过
   userFavoritedOpinion(userId, opinionFavorites) {
     let favorited = false;
     for (let i = 0; i < opinionFavorites.length; i++) {
@@ -73,7 +73,8 @@ class SingleDiscussion extends Component {
     return favorited;
   }
 
-  handleReplySubmit() {
+  //创建一级评论
+  handleReplySubmit = () => {
     const {
       forums,
       postOpinion,
@@ -86,16 +87,19 @@ class SingleDiscussion extends Component {
     const forumSlug = this.props.params.forum;
     const forumId = _.find(forums, { forum_slug: forumSlug })._id;
 
-    postOpinion(
-      {
-        forum_id: forumId,
-        discussion_id: discussion._id,
-        user_id: userId,
-        content: opinionContent,
-      },
-      discussion_slug
-    );
-  }
+    //创建一个opnion需要的信息
+    const opinion = {
+      forum_id: forumId,
+      discussion_id: discussion._id,
+      user_id: userId,
+      content: opinionContent,
+      parent_id: discussion._id,
+      depth:
+        discussion.opinions.length > 0 ? discussion.opinions[0].depth + 1 : 1,
+    };
+
+    postOpinion(opinion, discussion_slug);
+  };
 
   deleteDiscussion() {
     const { discussion } = this.props.params;
@@ -117,12 +121,12 @@ class SingleDiscussion extends Component {
       toggleFavorite,
       toggleingFavorite,
       updateOpinionContent,
+      updateSubOpinionContent,
       postingOpinion,
       opinionError,
       deletingOpinion,
       deletingDiscussion,
       error,
-      toggleingOpinionFavorite,
       toggleOpinionFavorite, //这里的toggleOpinionFavorite来自于dispatch
     } = this.props;
 
@@ -140,9 +144,6 @@ class SingleDiscussion extends Component {
     const { _id, content, date, favorites, title, tags, opinions } = discussion;
 
     const { avatarUrl, name, username } = discussion.user;
-
-    //有很多个opinion,不是判断一个opinion的opinionFavorites,而是全部的
-    //所以不应该在discussion里判断,而是在opinion组件里
 
     // check if logged in user is owner of the discussion
     let allowDelete = false;
@@ -192,7 +193,7 @@ class SingleDiscussion extends Component {
         {userAuthenticated && (
           <ReplyBox
             posting={postingOpinion}
-            onSubmit={this.handleReplySubmit.bind(this)}
+            onSubmit={this.handleReplySubmit}
             onChange={(content) => {
               updateOpinionContent(content);
             }}
@@ -201,12 +202,10 @@ class SingleDiscussion extends Component {
 
         {opinions &&
           opinions.map((opinion) => {
-            const { opinionFavorites } = opinion;
-
             //check if user favorated the opinion
             const opinionUserFavorited = this.userFavoritedOpinion(
               this.props.userId,
-              opinionFavorites
+              opinion.opinionFavorites
             );
 
             return (
@@ -219,14 +218,27 @@ class SingleDiscussion extends Component {
                 opDate={opinion.date}
                 opContent={opinion.content}
                 userId={opinion.user_id}
+                // 点赞
+                favoriteCount={opinion.opinionFavorites.length}
+                toggleOpinionFavoriteAction={toggleOpinionFavorite}
+                userFavorited={opinionUserFavorited}
+                // 多级回复
+                forumId={opinion.forum_id}
+                discussionId={opinion.discussion_id}
+                discussionSlug={this.props.params.discussion_slug}
+                depth={opinion.depth}
+                subOpinions={opinion.subOpinions}
+                postOpinion={this.props.postOpinion}
+                posting={postingOpinion}
+                subOpinionContent={this.props.subOpinionContent}
+                updateSubOpinionContentAction={updateSubOpinionContent}
+                fetchingDiscussion={fetchingDiscussion}
+                parentId={opinion.parent_id}
+                // 删除
                 currentUserId={this.props.userId}
                 currentUserRole={this.props.userRole}
                 deleteAction={this.deleteOpinion.bind(this)}
                 deletingOpinion={deletingOpinion}
-                favoriteCount={opinionFavorites.length}
-                favoriteAction={toggleOpinionFavorite}
-                userFavorited={opinionUserFavorited}
-                toggleingOpinionFavorite={toggleingOpinionFavorite}
               />
             );
           })}
@@ -247,12 +259,12 @@ export default connect(
       deletingDiscussion: state.discussion.deletingDiscussion,
       deletedDiscussion: state.discussion.deletedDiscussion,
       opinionContent: state.discussion.opinionContent,
+      subOpinionContent: state.discussion.subOpinionContent,
       postingOpinion: state.discussion.postingOpinion,
       opinionError: state.discussion.opinionError,
       deletingOpinion: state.discussion.deletingOpinion,
       discussion: state.discussion.discussion,
       error: state.discussion.error,
-      toggleingOpinionFavorite: state.discussion.toggleingOpinionFavorite,
     };
   },
   (dispatch) => {
@@ -269,6 +281,9 @@ export default connect(
       },
       updateOpinionContent: (content) => {
         dispatch(updateOpinionContent(content));
+      },
+      updateSubOpinionContent: (content) => {
+        dispatch(updateSubOpinionContent(content));
       },
       postOpinion: (opinion, discussionSlug) => {
         dispatch(postOpinion(opinion, discussionSlug));

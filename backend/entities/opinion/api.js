@@ -10,7 +10,9 @@ const toggleOpinionFavorite = require("./controller").toggleOpinionFavorite;
 const opinionAPI = (app) => {
   // create an opinion
   app.post("/api/opinion/newOpinion", (req, res) => {
+    //这里的req.user是会自动加上去的吗
     if (req.user) {
+      console.log("req.body------------", req.body);
       createOpinion(req.body).then(
         (result) => {
           res.send(result);
@@ -33,9 +35,8 @@ const opinionAPI = (app) => {
       // TODO: describe the toggle process with opinions
       toggleOpinionFavorite(opinion_id, req.user._id).then(
         (result) => {
-          //果然,这里有问题了!!! (第一个参数不能直接省略啊啊啊)
+          //第一个参数不能直接省略
           //修改成功之后,重新获取discussion,返回给前台
-          // console.log("toggleOpinionFavorite------result", result);
           getDiscussion(null, result.discussion_id).then(
             (result) => {
               // console.log("getDiscussion------success", rseult);

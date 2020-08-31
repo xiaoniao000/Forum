@@ -16,6 +16,7 @@ export const TOGGLE_OPINION_FAVORITE_FAILURE =
   "toggle_opinion_favorite_failure";
 
 export const UPDATE_OPINION_CONTENT = "update_opinion_content";
+export const UPDATE_SUB_OPINION_CONTENT = "update_sub_opinion_content";
 
 export const POSTING_OPINION_START = "posting_opinion_start";
 export const POSTING_OPINION_SUCCESS = "posting_opinion_success";

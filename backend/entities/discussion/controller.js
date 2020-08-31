@@ -20,10 +20,8 @@ const getDiscussion = (discussion_slug, discussion_id) => {
 
     // console.log("getDiscussion--------findObject", findObject);
 
-    //Discussion是一个从model.js里导出的Schema
-    //下面这么多函数是什么意思!!!
     Discussion.findOne(findObject)
-      .populate("forum")
+      .populate("forum") //用forum中的与该discussion_slug相同的记录替换
       .populate("user")
       .lean()
       .exec((error, result) => {
@@ -32,6 +30,8 @@ const getDiscussion = (discussion_slug, discussion_id) => {
           reject(error);
         } else if (!result) reject(null);
         else {
+          // console.log("...result----------", { ...result }); 这个输出没问题
+          // discussion里原本没有opnions，在后端这里加上去了
           // add opinions to the discussion object
           getAllOpinions(result._id).then(
             (opinions) => {

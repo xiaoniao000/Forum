@@ -10,6 +10,7 @@ import {
   TOGGLE_OPINION_FAVORITE_SUCCESS,
   TOGGLE_OPINION_FAVORITE_FAILURE,
   UPDATE_OPINION_CONTENT,
+  UPDATE_SUB_OPINION_CONTENT,
   POSTING_OPINION_START,
   POSTING_OPINION_SUCCESS,
   POSTING_OPINION_FAILURE,
@@ -108,6 +109,18 @@ export const updateOpinionContent = (value) => {
 };
 
 /**
+ * update subOpinion content in redux state (controlled input)
+ * @param  {Object} value
+ * @return {action}
+ */
+export const updateSubOpinionContent = (value) => {
+  return {
+    type: UPDATE_SUB_OPINION_CONTENT,
+    payload: value,
+  };
+};
+
+/**
  * post an opinion
  * @param  {Object} opinion
  * @param  {String} discussionSlug
@@ -130,14 +143,17 @@ export const postOpinion = (opinion, discussionSlug) => {
       postOpinionApi(opinion).then(
         (data) => {
           if (data.data._id) {
+            console.log(data);
             // fetch the discussion to refresh the opinion list
+            // ???因为store中，没有state.opinion,只有state.discussion，所以只能通过重新获取讨论的数据来rerender
             fetchSingleDiscussion(discussionSlug).then(
               (data) => {
+                dispatch({ type: POSTING_OPINION_SUCCESS });
+                //下面这里有问题
                 dispatch({
                   type: FETCHING_SINGLE_DISC_SUCCESS,
                   payload: data.data,
                 });
-                dispatch({ type: POSTING_OPINION_SUCCESS });
               },
               (error) => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
             );

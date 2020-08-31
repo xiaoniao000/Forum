@@ -7,8 +7,50 @@ import styles from "./styles.css";
 import PlaceholderImage from "SharedStyles/placeholder.jpg";
 import Button from "Components/Button";
 import RichEditor from "Components/RichEditor";
+import ReplyBox from "../ReplyBox";
 
 class Opinion extends Component {
+  state = {
+    isReplying: false,
+  };
+
+  //用户是否给二级评论点赞过
+  userFavoritedOpinion(userId, opinionFavorites) {
+    let favorited = false;
+    for (let i = 0; i < opinionFavorites.length; i++) {
+      if (opinionFavorites[i] === userId) favorited = true;
+    }
+    return favorited;
+  }
+
+  handleChange = (content) => {};
+
+  //创建二级评论
+  handleReplySubmit = () => {
+    const {
+      postOpinion,
+      subOpinionContent,
+      currentUserId, //当前回复人的id
+      forumId,
+      discussionId,
+      discussionSlug,
+      opinionId,
+      depth,
+    } = this.props;
+
+    //创建一个opnion需要的信息
+    const opinion = {
+      forum_id: forumId,
+      discussion_id: discussionId,
+      user_id: currentUserId,
+      content: subOpinionContent,
+      parent_id: opinionId,
+      depth,
+    };
+
+    postOpinion(opinion, discussionSlug);
+  };
+
   render() {
     const {
       opinionId,
@@ -17,17 +59,30 @@ class Opinion extends Component {
       userGitHandler,
       opDate,
       opContent,
-      userId,
-      currentUserId,
-      currentUserRole,
-      deleteAction,
-      deletingOpinion,
-
-      favoriteCount,
-      favoriteAction,
-      userFavorited,
-      toggleingFavorite,
+      userId, //发表opinion的人的id
+      //当前浏览用户能否删除评论
+      currentUserId, //当前浏览者的id
+      currentUserRole, //当前浏览者的角色
+      deleteAction, //删除评论的action
+      deletingOpinion, //是否正在删除评论
+      //点赞
+      favoriteCount, //当前评论点赞数
+      toggleOpinionFavoriteAction, //点赞评论的action
+      userFavorited, //当前用户是否点赞该评论
+      toggleingOpinionFavorite, //切换点赞状态
+      //多级回复
+      posting,
+      subOpinions, //存放多级回复的数组，由容器组件传值
+      updateSubOpinionContentAction,
+      fetchingDiscussion,
     } = this.props;
+
+    // return loading status if discussion is not fetched yet
+    if (fetchingDiscussion) {
+      return (
+        <div className={styles.loadingWrapper}>Loading discussion ...</div>
+      );
+    }
 
     let dateDisplay = moment(opDate);
     dateDisplay = dateDisplay.from(moment());
@@ -35,11 +90,13 @@ class Opinion extends Component {
     const allowDelete = userId === currentUserId || currentUserRole === "admin";
 
     let favCount = "";
-    if (toggleingFavorite) favCount = "Toggling Favorite...";
+    if (toggleingOpinionFavorite) favCount = "Toggling Favorite...";
     else if (userFavorited) favCount = `Favorited (${favoriteCount})`;
     else if (favoriteCount === 0) favCount = "Make favorite";
     else if (favoriteCount === 1) favCount = "1 favorite";
     else favCount = `${favoriteCount} favorites`;
+
+    let isReplying = this.state.isReplying;
 
     return (
       <div className={styles.container}>
@@ -57,6 +114,13 @@ class Opinion extends Component {
               <i className={classnames("fa fa-github-alt", styles.gitIcon)}></i>
               <span>{userGitHandler}</span>
             </a>
+            {this.props.discussionId !== this.props.parentId && (
+              <span>
+                &nbsp;&nbsp; {this.props.opinionId}&nbsp;&nbsp; replies
+                to&nbsp;&nbsp;
+                {this.props.parentId}
+              </span>
+            )}
           </div>
           <div className={styles.dateInfo}>{dateDisplay}</div>
           {allowDelete && (
@@ -73,18 +137,17 @@ class Opinion extends Component {
           )}
           {/* <Button noUppercase>Quote</Button> */}
         </div>
-
         <div className={styles.opContent}>
-          <RichEditor readOnly value={opContent} isOpinion={true} />
+          <RichEditor readOnly value={opContent} />
         </div>
-
         {/* 点赞 */}
         {
           <Button
             className={styles.favoriteButton}
             noUppercase
             onClick={() => {
-              !toggleingFavorite && favoriteAction(opinionId);
+              !toggleingOpinionFavorite &&
+                toggleOpinionFavoriteAction(opinionId);
             }}
           >
             <i
@@ -95,9 +158,73 @@ class Opinion extends Component {
             <span>{favCount}</span>
           </Button>
         }
-
         {/* 二级回复 */}
-        {}
+        {/*   按钮 */}
+        <Button
+          className={styles.favoriteButton}
+          noUppercase
+          onClick={() => {
+            this.setState((prevState) => ({
+              isReplying: !prevState.isReplying,
+            }));
+          }}
+        >
+          <span>{isReplying ? "Cancel Reply" : "Reply"}</span>
+        </Button>
+
+        {isReplying && (
+          <ReplyBox
+            type="newOpinion"
+            posting={posting}
+            onSubmit={this.handleReplySubmit}
+            onChange={(content) => {
+              updateSubOpinionContentAction(content);
+            }}
+          />
+        )}
+
+        {/*   列表 可能要重新写一个子评论的组件 */}
+        {subOpinions &&
+          subOpinions.map((opinion) => {
+            //check if user favorated the opinion
+            const opinionUserFavorited = this.userFavoritedOpinion(
+              currentUserId,
+              opinion.opinionFavorites
+            );
+
+            return (
+              <Opinion
+                key={opinion._id}
+                opinionId={opinion._id}
+                userAvatar={opinion.user.avatarUrl}
+                userName={opinion.user.name}
+                userGitHandler={opinion.user.username}
+                opDate={opinion.date}
+                opContent={opinion.content}
+                userId={opinion.user_id}
+                // 点赞
+                favoriteCount={opinion.opinionFavorites.length}
+                toggleOpinionFavoriteAction={toggleOpinionFavoriteAction}
+                userFavorited={opinionUserFavorited}
+                // 回复
+                forumId={this.props.forumId}
+                discussionId={this.props.discussionId}
+                discussionSlug={this.props.discussionSlug}
+                depth={this.props.depth}
+                postOpinion={this.props.postOpinion}
+                posting={this.posting}
+                subOpinionContent={this.props.subOpinionContent}
+                updateSubOpinionContentAction={updateSubOpinionContentAction}
+                fetchingDiscussion={fetchingDiscussion}
+                parentId={opinion.parent_id}
+                // 删除该评论
+                currentUserId={currentUserId}
+                currentUserRole={currentUserRole}
+                deleteAction={deleteAction}
+                deletingOpinion={deletingOpinion}
+              />
+            );
+          })}
 
         {deletingOpinion === opinionId && (
           <div className={styles.deletingOpinion}>Deleting Opinion ...</div>
@@ -121,9 +248,20 @@ Opinion.defaultProps = {
   deleteAction: () => {},
   deletingOpinion: null,
   favoriteCount: 0,
-  favoriteAction: () => {},
+  toggleOpinionFavoriteAction: () => {},
   userFavorited: false,
-  toggleingFavorite: false,
+  toggleingOpinionFavorite: false,
+  parentId: "", //评论回复的对象是谁
+  subOpinions: [], //多级评论数组
+  posting: false,
+  postOpnion: () => {},
+  forumId: "",
+  discussionId: "",
+  discussionSlug: "",
+  depth: 0,
+  subOpinionContent: "",
+  updateSubOpinionContentAction: () => {},
+  fetchingDiscussion: false,
 };
 
 Opinion.propTypes = {
@@ -139,9 +277,20 @@ Opinion.propTypes = {
   deleteAction: React.PropTypes.func,
   deletingOpinion: React.PropTypes.any,
   favoriteCount: React.PropTypes.number,
-  favoriteAction: React.PropTypes.func,
+  toggleOpinionFavoriteAction: React.PropTypes.func,
   userFavorited: React.PropTypes.bool,
-  toggleingFavorite: React.PropTypes.bool,
+  toggleingOpinionFavorite: React.PropTypes.bool,
+  parentId: React.PropTypes.string,
+  subOpinions: React.PropTypes.array,
+  posting: React.PropTypes.bool,
+  postOpinion: React.PropTypes.func,
+  forumId: React.PropTypes.string,
+  discussionId: React.PropTypes.string,
+  discussionSlug: React.PropTypes.string,
+  depth: React.PropTypes.number,
+  subOpinionContent: React.PropTypes.string,
+  updateSubOpinionContentAction: React.PropTypes.func,
+  fetchingDiscussion: React.PropTypes.bool,
 };
 
 export default Opinion;

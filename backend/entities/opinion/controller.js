@@ -1,5 +1,6 @@
 // models
 const Opinion = require("./model");
+const { map } = require("lodash");
 
 /**
  * get all opinion regarding a single discussion
@@ -8,15 +9,56 @@ const Opinion = require("./model");
  */
 const getAllOpinions = (discussion_id) => {
   return new Promise((resolve, reject) => {
+    // 先得到所有该discussion下的opnion
     Opinion.find({ discussion_id })
       .populate("user")
-      .sort({ date: -1 })
+      .sort({ date: -1 }) //降序
       .exec((error, opinions) => {
+        //execuce 立即执行查询
         if (error) {
           console.log(error);
           reject(error);
         } else if (!opinions) reject(null);
-        else resolve(opinions);
+        else {
+          // console.log("opinions-----------", opinions);
+          // console.log("opinion-----------", { ...opinions[0] }); 这个输出有问题
+          //得到一级回复
+          const firstLevelOpinions = opinions.filter(
+            (opinion) =>
+              JSON.stringify(opinion.parent_id) == JSON.stringify(discussion_id)
+          );
+          const secondLevelOpinions = opinions.filter(
+            (opinion) =>
+              JSON.stringify(opinion.parent_id) !==
+              JSON.stringify(discussion_id)
+          );
+          // console.log("secondLevelOpinions---------", secondLevelOpinions);
+
+          try {
+            for (let firstLevelOpinion of firstLevelOpinions) {
+              // 得到每层楼的二级回复
+              secondLevelOpinions.filter((secondLevelOpinion) => {
+                return secondLevelOpinion.depth === firstLevelOpinion.depth;
+              });
+              // !!!这个_doc注意一下，不加不能动态添加属性
+              firstLevelOpinion._doc[
+                "subOpinions"
+              ] = secondLevelOpinions.filter((secondLevelOpinion) => {
+                return secondLevelOpinion.depth === firstLevelOpinion.depth;
+              });
+              //按发表时间降序排列每层楼的二级回复
+              firstLevelOpinion.subOpinions &&
+                firstLevelOpinion.subOpinions.sort(
+                  (opinion_a, opinion_b) => opinion_b.date - opinion_a.date
+                );
+            }
+          } catch (err) {
+            console.log("---------------", err);
+          }
+
+          // console.log("firstLevelOpinions---------", firstLevelOpinions);
+          resolve(firstLevelOpinions);
+        }
       });
   });
 };
@@ -29,7 +71,14 @@ const getAllOpinions = (discussion_id) => {
  * @param  {Object} content
  * @return {Promise}
  */
-const createOpinion = ({ forum_id, discussion_id, user_id, content }) => {
+const createOpinion = ({
+  forum_id,
+  discussion_id,
+  user_id,
+  content,
+  parent_id,
+  depth,
+}) => {
   return new Promise((resolve, reject) => {
     const newOpinion = new Opinion({
       forum_id,
@@ -39,6 +88,9 @@ const createOpinion = ({ forum_id, discussion_id, user_id, content }) => {
       user: user_id,
       content,
       date: new Date(),
+      opinionFavorites: [],
+      parent_id,
+      depth,
     });
 
     newOpinion.save((error) => {
@@ -48,6 +100,26 @@ const createOpinion = ({ forum_id, discussion_id, user_id, content }) => {
       } else {
         resolve(newOpinion);
       }
+    });
+  });
+};
+
+const updateOpinion = (opinion_id) => {
+  // TODO: implement update for opinion
+};
+
+/**
+ * delete a single opinion
+ * @param  {ObjectId} opinion_id
+ * @return {Promise}
+ */
+const deleteOpinion = (opinion_id) => {
+  return new Promise((resolve, reject) => {
+    Opinion.remove({ _id: opinion_id }).exec((error) => {
+      if (error) {
+        console.log(error);
+        reject(error);
+      } else resolve("deleted");
     });
   });
 };
@@ -100,26 +172,6 @@ const toggleOpinionFavorite = (opinion_id, user_id) => {
           resolve(updatedOpinion);
         });
       }
-    });
-  });
-};
-
-const updateOpinion = (opinion_id) => {
-  // TODO: implement update for opinion
-};
-
-/**
- * delete a single opinion
- * @param  {ObjectId} opinion_id
- * @return {Promise}
- */
-const deleteOpinion = (opinion_id) => {
-  return new Promise((resolve, reject) => {
-    Opinion.remove({ _id: opinion_id }).exec((error) => {
-      if (error) {
-        console.log(error);
-        reject(error);
-      } else resolve("deleted");
     });
   });
 };
