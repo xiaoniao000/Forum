@@ -15,6 +15,8 @@ export const TOGGLE_OPINION_FAVORITE_SUCCESS =
 export const TOGGLE_OPINION_FAVORITE_FAILURE =
   "toggle_opinion_favorite_failure";
 
+export const TOGGLE_OPINION_IS_REPLYING = "toggle_opinion_is_replying";
+
 export const UPDATE_OPINION_CONTENT = "update_opinion_content";
 export const UPDATE_SUB_OPINION_CONTENT = "update_sub_opinion_content";
 

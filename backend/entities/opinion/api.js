@@ -12,7 +12,7 @@ const opinionAPI = (app) => {
   app.post("/api/opinion/newOpinion", (req, res) => {
     //这里的req.user是会自动加上去的吗
     if (req.user) {
-      console.log("req.body------------", req.body);
+      // console.log("req.body------------", req.body);
       createOpinion(req.body).then(
         (result) => {
           res.send(result);

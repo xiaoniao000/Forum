@@ -55,9 +55,13 @@
       text-decoration: none;
       color: secondaryFontColor;
       transition: color 0.3s;
-      &:hover { color: primaryFontColor; }
+      &:hover {
+        color: primaryFontColor;
+      }
 
-      & .gitIcon { margin-right: 5px; }
+      & .gitIcon {
+        margin-right: 5px;
+      }
     }
   }
 
@@ -65,7 +69,9 @@
     font-size: 13px;
     line-height: 13px;
     color: secondaryFontColor;
-    @media smallBP { margin-left: 10px; }
+    @media smallBP {
+      margin-left: 10px;
+    }
   }
 
   & .deleteButton {
@@ -82,7 +88,7 @@
 .opContent {
   margin-top: 10px;
   margin-bottom: 20px;
-  min-height: 60px;
+  min-height: 15px;
   font-size: 15px;
   line-height: 26px;
 }
@@ -99,7 +105,9 @@
     cursor: pointer;
     user-select: none;
     transition: color 0.3s;
-    &:hover { color: primaryFontColor; }
+    &:hover {
+      color: primaryFontColor;
+    }
 
     & i {
       font-size: 20px;

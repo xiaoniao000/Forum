@@ -12,6 +12,7 @@ const getAllOpinions = (discussion_id) => {
     // 先得到所有该discussion下的opnion
     Opinion.find({ discussion_id })
       .populate("user")
+      .populate("parent_user")
       .sort({ date: -1 }) //降序
       .exec((error, opinions) => {
         //execuce 立即执行查询
@@ -21,12 +22,12 @@ const getAllOpinions = (discussion_id) => {
         } else if (!opinions) reject(null);
         else {
           // console.log("opinions-----------", opinions);
-          // console.log("opinion-----------", { ...opinions[0] }); 这个输出有问题
           //得到一级回复
           const firstLevelOpinions = opinions.filter(
             (opinion) =>
               JSON.stringify(opinion.parent_id) == JSON.stringify(discussion_id)
           );
+          //得到所有楼的二级回复
           const secondLevelOpinions = opinions.filter(
             (opinion) =>
               JSON.stringify(opinion.parent_id) !==
@@ -77,6 +78,7 @@ const createOpinion = ({
   user_id,
   content,
   parent_id,
+  parent_user_id,
   depth,
 }) => {
   return new Promise((resolve, reject) => {
@@ -90,6 +92,7 @@ const createOpinion = ({
       date: new Date(),
       opinionFavorites: [],
       parent_id,
+      parent_user: parent_user_id,
       depth,
     });
 

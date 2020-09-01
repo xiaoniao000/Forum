@@ -9,6 +9,7 @@ import {
   TOGGLE_OPINION_FAVORITE_START,
   TOGGLE_OPINION_FAVORITE_SUCCESS,
   TOGGLE_OPINION_FAVORITE_FAILURE,
+  TOGGLE_OPINION_IS_REPLYING,
   UPDATE_OPINION_CONTENT,
   UPDATE_SUB_OPINION_CONTENT,
   POSTING_OPINION_START,
@@ -97,6 +98,15 @@ export const toggleOpinionFavorite = (opinionId) => {
 };
 
 /**
+ * toggle opinionIsReplying status of the opinion
+ * @return {action}
+ */
+export const toggleOpinionIsReplying = () => {
+  console.log(1);
+  return { type: TOGGLE_OPINION_IS_REPLYING };
+};
+
+/**
  * update opinion content in redux state (controlled input)
  * @param  {Object} value
  * @return {action}
@@ -127,6 +137,7 @@ export const updateSubOpinionContent = (value) => {
  * @return {action}
  */
 export const postOpinion = (opinion, discussionSlug) => {
+  // console.log("postOpinion--------", discussionSlug);
   return (dispatch, getState) => {
     // dispatch to show the posting message
     dispatch({ type: POSTING_OPINION_START });
@@ -143,20 +154,21 @@ export const postOpinion = (opinion, discussionSlug) => {
       postOpinionApi(opinion).then(
         (data) => {
           if (data.data._id) {
-            console.log(data);
             // fetch the discussion to refresh the opinion list
-            // ???因为store中，没有state.opinion,只有state.discussion，所以只能通过重新获取讨论的数据来rerender
-            fetchSingleDiscussion(discussionSlug).then(
-              (data) => {
-                dispatch({ type: POSTING_OPINION_SUCCESS });
-                //下面这里有问题
+            // 因为store中，没有state.opinion,只有state.discussion，所以只能通过重新获取讨论的数据来rerender
+            fetchSingleDiscussion(discussionSlug)
+              .then((data) => {
+                // console.log("fetchSingleDiscussion--------", data);
                 dispatch({
                   type: FETCHING_SINGLE_DISC_SUCCESS,
                   payload: data.data,
                 });
-              },
-              (error) => dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
-            );
+                dispatch({ type: POSTING_OPINION_SUCCESS });
+                //之前把处理错误的函数写在then里面，这样不好
+              })
+              .catch((error) =>
+                dispatch({ type: FETCHING_SINGLE_DISC_FAILURE })
+              );
           } else dispatch({ type: POSTING_OPINION_FAILURE });
         },
         (error) => dispatch({ type: POSTING_OPINION_FAILURE })

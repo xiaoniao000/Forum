@@ -23,14 +23,13 @@ class Opinion extends Component {
     return favorited;
   }
 
-  handleChange = (content) => {};
-
   //创建二级评论
   handleReplySubmit = () => {
     const {
       postOpinion,
       subOpinionContent,
       currentUserId, //当前回复人的id
+      userId, //回复的opinion的发布者id
       forumId,
       discussionId,
       discussionSlug,
@@ -45,10 +44,14 @@ class Opinion extends Component {
       user_id: currentUserId,
       content: subOpinionContent,
       parent_id: opinionId,
+      parent_user_id: userId,
       depth,
     };
 
     postOpinion(opinion, discussionSlug);
+    this.setState((prevState) => ({
+      isReplying: !prevState.isReplying,
+    }));
   };
 
   render() {
@@ -74,15 +77,8 @@ class Opinion extends Component {
       posting,
       subOpinions, //存放多级回复的数组，由容器组件传值
       updateSubOpinionContentAction,
-      fetchingDiscussion,
+      parentUser,
     } = this.props;
-
-    // return loading status if discussion is not fetched yet
-    if (fetchingDiscussion) {
-      return (
-        <div className={styles.loadingWrapper}>Loading discussion ...</div>
-      );
-    }
 
     let dateDisplay = moment(opDate);
     dateDisplay = dateDisplay.from(moment());
@@ -106,19 +102,23 @@ class Opinion extends Component {
             <Link to={`/user/${userGitHandler}`} className={styles.name}>
               {userName || userGitHandler}
             </Link>
-            <a
+            {/* <a
               href={`https://www.github.com/${userGitHandler}`}
               target="_blank"
               className={styles.gitHandler}
             >
               <i className={classnames("fa fa-github-alt", styles.gitIcon)}></i>
               <span>{userGitHandler}</span>
-            </a>
+            </a> */}
             {this.props.discussionId !== this.props.parentId && (
               <span>
-                &nbsp;&nbsp; {this.props.opinionId}&nbsp;&nbsp; replies
-                to&nbsp;&nbsp;
-                {this.props.parentId}
+                &nbsp;&nbsp; replies to&nbsp;&nbsp;
+                <Link
+                  to={`/user/${parentUser.username}`}
+                  className={styles.name}
+                >
+                  {parentUser.username}
+                </Link>
               </span>
             )}
           </div>
@@ -193,36 +193,41 @@ class Opinion extends Component {
             );
 
             return (
-              <Opinion
+              <div
                 key={opinion._id}
-                opinionId={opinion._id}
-                userAvatar={opinion.user.avatarUrl}
-                userName={opinion.user.name}
-                userGitHandler={opinion.user.username}
-                opDate={opinion.date}
-                opContent={opinion.content}
-                userId={opinion.user_id}
-                // 点赞
-                favoriteCount={opinion.opinionFavorites.length}
-                toggleOpinionFavoriteAction={toggleOpinionFavoriteAction}
-                userFavorited={opinionUserFavorited}
-                // 回复
-                forumId={this.props.forumId}
-                discussionId={this.props.discussionId}
-                discussionSlug={this.props.discussionSlug}
-                depth={this.props.depth}
-                postOpinion={this.props.postOpinion}
-                posting={this.posting}
-                subOpinionContent={this.props.subOpinionContent}
-                updateSubOpinionContentAction={updateSubOpinionContentAction}
-                fetchingDiscussion={fetchingDiscussion}
-                parentId={opinion.parent_id}
-                // 删除该评论
-                currentUserId={currentUserId}
-                currentUserRole={currentUserRole}
-                deleteAction={deleteAction}
-                deletingOpinion={deletingOpinion}
-              />
+                style={{ marginLeft: 20, marginRight: 20 }}
+              >
+                <Opinion
+                  key={opinion._id}
+                  opinionId={opinion._id}
+                  userAvatar={opinion.user.avatarUrl}
+                  userName={opinion.user.name}
+                  userGitHandler={opinion.user.username}
+                  opDate={opinion.date}
+                  opContent={opinion.content}
+                  userId={opinion.user_id}
+                  // 点赞
+                  favoriteCount={opinion.opinionFavorites.length}
+                  toggleOpinionFavoriteAction={toggleOpinionFavoriteAction}
+                  userFavorited={opinionUserFavorited}
+                  // 回复
+                  forumId={this.props.forumId}
+                  discussionId={this.props.discussionId}
+                  discussionSlug={this.props.discussionSlug}
+                  depth={this.props.depth}
+                  postOpinion={this.props.postOpinion}
+                  posting={this.posting}
+                  subOpinionContent={this.props.subOpinionContent}
+                  updateSubOpinionContentAction={updateSubOpinionContentAction}
+                  parentId={opinion.parent_id}
+                  parentUser={opinion.parent_user}
+                  // 删除该评论
+                  currentUserId={currentUserId}
+                  currentUserRole={currentUserRole}
+                  deleteAction={deleteAction}
+                  deletingOpinion={deletingOpinion}
+                />
+              </div>
             );
           })}
 
@@ -251,7 +256,8 @@ Opinion.defaultProps = {
   toggleOpinionFavoriteAction: () => {},
   userFavorited: false,
   toggleingOpinionFavorite: false,
-  parentId: "", //评论回复的对象是谁
+  parentUser: {}, //评论回复的评论的发布者
+  parentId: "", //该评论回复的评论的opinionId
   subOpinions: [], //多级评论数组
   posting: false,
   postOpnion: () => {},
@@ -261,7 +267,6 @@ Opinion.defaultProps = {
   depth: 0,
   subOpinionContent: "",
   updateSubOpinionContentAction: () => {},
-  fetchingDiscussion: false,
 };
 
 Opinion.propTypes = {
@@ -281,6 +286,7 @@ Opinion.propTypes = {
   userFavorited: React.PropTypes.bool,
   toggleingOpinionFavorite: React.PropTypes.bool,
   parentId: React.PropTypes.string,
+  parentUser: React.PropTypes.object,
   subOpinions: React.PropTypes.array,
   posting: React.PropTypes.bool,
   postOpinion: React.PropTypes.func,
@@ -290,7 +296,6 @@ Opinion.propTypes = {
   depth: React.PropTypes.number,
   subOpinionContent: React.PropTypes.string,
   updateSubOpinionContentAction: React.PropTypes.func,
-  fetchingDiscussion: React.PropTypes.bool,
 };
 
 export default Opinion;

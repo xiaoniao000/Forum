@@ -23,9 +23,10 @@ const opinionSchema = mongoose.Schema({
   //回复
   // 在讨论的第几层
   depth: Number,
-  // 直接回复对象的id
+  // 直接回复对象(opinion)的id
   parent_id: mongoose.Schema.ObjectId,
-  parent: { type: mongoose.Schema.ObjectId, ref: "user" },
+  // 回复对象(opinion)的发布者
+  parent_user: { type: mongoose.Schema.ObjectId, ref: "user" },
 });
 
-module.exports = mongoose.model("opinion", opinionSchema); //起一个别名opinion
+module.exports = mongoose.model("opinion", opinionSchema);

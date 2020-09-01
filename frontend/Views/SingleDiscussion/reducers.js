@@ -9,6 +9,7 @@ import {
   TOGGLE_OPINION_FAVORITE_START,
   TOGGLE_OPINION_FAVORITE_SUCCESS,
   TOGGLE_OPINION_FAVORITE_FAILURE,
+  TOGGLE_OPINION_IS_REPLYING,
   UPDATE_OPINION_CONTENT,
   POSTING_OPINION_START,
   POSTING_OPINION_SUCCESS,
@@ -27,6 +28,7 @@ const initialState = {
   fetchingDiscussion: true,
   toggleingFavorite: false,
   postingOpinion: false,
+  opinionIsReplying: false,
   opinionContent: null,
   subOpinionContent: null,
   opinionError: null,
@@ -83,6 +85,12 @@ export const singleDiscussionReducer = (state = initialState, action) => {
       return Object.assign({}, state, {
         toggleingOpinionFavorite: false,
       });
+
+    // case TOGGLE_OPINION_IS_REPLYING:
+    //   // console.log(1);
+    //   return Object.assign({}, state, {
+    //     opinionIsReplying: true,
+    //   });
 
     case UPDATE_OPINION_CONTENT:
       return Object.assign({}, state, {

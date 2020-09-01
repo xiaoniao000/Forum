@@ -225,15 +225,15 @@ class SingleDiscussion extends Component {
                 // 多级回复
                 forumId={opinion.forum_id}
                 discussionId={opinion.discussion_id}
-                discussionSlug={this.props.params.discussion_slug}
+                discussionSlug={this.props.params.discussion}
                 depth={opinion.depth}
                 subOpinions={opinion.subOpinions}
                 postOpinion={this.props.postOpinion}
                 posting={postingOpinion}
                 subOpinionContent={this.props.subOpinionContent}
                 updateSubOpinionContentAction={updateSubOpinionContent}
-                fetchingDiscussion={fetchingDiscussion}
                 parentId={opinion.parent_id}
+                parentUser={opinion.parent_user}
                 // 删除
                 currentUserId={this.props.userId}
                 currentUserRole={this.props.userRole}
